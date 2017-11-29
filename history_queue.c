@@ -14,6 +14,11 @@
 // static: means these variables are only in scope in this .c module
 static HistoryEntry history[MAXHIST]; 
 
+static int queue_start = 0;
+static int queue_next = 0;
+static int queue_size = 0;
+static int cmd_num = 0; 
+
 // Look at your lab 10 implementation of a circular queue of integers and
 // reuse liberally.
 
@@ -24,3 +29,28 @@ static HistoryEntry history[MAXHIST];
 
 
 // TODO: implement your history queue functions here
+
+void add_queue(char *cmd_line){
+	
+	if(queue_size == MAXHIST){
+		queue_start++;
+	}
+	if(queue_start > MAXHIST){
+		queue_start = 0;
+	}
+	if(queue_next == MAXHIST){
+		queue_next = 0;
+	}
+
+	//Add new element to queue
+	history[queue_next].cmd_num = cmd_num;
+	strcpy( history[queue_next].cmdline, cmd_line );
+	
+	cmd_num++;
+	queue_next++;
+
+	if(queue_size < MAXHIST){
+		queue_size++;
+	}
+}	
+

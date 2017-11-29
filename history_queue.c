@@ -43,6 +43,7 @@ void add_queue(char *cmd_line){
 	}
 
 	//Add new element to queue
+	printf("Added: [%d] %s\n", queue_next, cmd_line);
 	history[queue_next].cmd_num = cmd_num;
 	strcpy( history[queue_next].cmdline, cmd_line );
 	

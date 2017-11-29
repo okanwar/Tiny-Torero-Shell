@@ -24,7 +24,7 @@ void add_queue(char *cmdline);
 
 
 int main() { 
-	//int background_flag = 0;
+	int background_flag = 0;
 	char *argv[MAXARGS];
 	// TODO: Add a call to sigaction to register your SIGCHLD signal handler
 	// here. See the write-up for more details on sigaction.
@@ -69,9 +69,17 @@ int main() {
 
 		// (4) Call a function that will determine how to execute the command
 		// that the user entered, and then execute it
-
+		for (int i = 0; i < MAXARGS; i++) {
 		
+			if(strcmp(argv[i], "&") == 0) {
+				background_flag = 1;
+				break;
+			} 
+	/*		else(strcmp(argv[i], "") == 0) {
+			   	background_flag = 0;	
+				break;
+			} */
+		}
 	}
-
 	return 0;
 }

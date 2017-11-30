@@ -65,19 +65,18 @@ int main() {
 		// TODO: complete top-level steps
 		// (3) make a call to parseArguments function to parse it into its argv
 		// format
-		parseArguments(cmdline,argv);
+		background_flag = parseArguments(cmdline,argv);
+		background_flag = 0;
 
 		// (4) Call a function that will determine how to execute the command
 		// that the user entered, and then execute it
-		for (int i = 0; i < MAXARGS; i++) {
-		
-			if(strcmp(argv[i], "&") == 0) {
-				background_flag = 1;
-				break;
-			} 
-			else if(strcmp(argv[i], "") == 0) {
-				break;
-			} 
+		int child_pid = fork();
+
+		if (child_pid == 0) {
+			execvp( *argv, argv);
+		}
+		else {
+			pid_t cid = waitpid(child_pid, NULL, 0);
 		}
 	}
 	return 0;

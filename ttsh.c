@@ -85,9 +85,8 @@ int main() {
 		int child_pid = fork();
 
 		if (child_pid == 0) {
-			execvp(*argv, argv);
-			if (background_flag) {
-				kill(getppid(), SIGUSR1); 
+			if(execvp(*argv, argv) == -1){
+				exit(1);
 			}
 		}
 		else {

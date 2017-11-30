@@ -75,10 +75,9 @@ int main() {
 				background_flag = 1;
 				break;
 			} 
-	/*		else(strcmp(argv[i], "") == 0) {
-			   	background_flag = 0;	
+			else if(strcmp(argv[i], "") == 0) {
 				break;
-			} */
+			} 
 		}
 	}
 	return 0;

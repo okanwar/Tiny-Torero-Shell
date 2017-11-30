@@ -66,7 +66,12 @@ int main() {
 		// (3) make a call to parseArguments function to parse it into its argv
 		// format
 		background_flag = parseArguments(cmdline,argv);
-		background_flag = 0;
+		background_flag +=0;
+
+		//Exit
+		if( strcmp( argv[0], "exit") == 0 ){
+			exit(0);
+		}
 
 		// (4) Call a function that will determine how to execute the command
 		// that the user entered, and then execute it
@@ -77,6 +82,7 @@ int main() {
 		}
 		else {
 			pid_t cid = waitpid(child_pid, NULL, 0);
+		cid = cid + 0;
 		}
 	}
 	return 0;

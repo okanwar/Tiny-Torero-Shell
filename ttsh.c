@@ -23,12 +23,18 @@
 void add_queue(char *cmdline);
 void reapHandler(int sig);
 
+
+
 int main() { 
 	signal(SIGUSR1, reapHandler);
 	int background_flag = 0;
 	char *argv[MAXARGS];
 	// TODO: Add a call to sigaction to register your SIGCHLD signal handler
 	// here. See the write-up for more details on sigaction.
+	struct sigaction sa;
+	sa.sa_handler = reapHandler;
+	sa.sa_flags = SA_NOCLDSTOP;
+	sigaction(SIGCHLD, &sa, NULL);
 
 	while(1) {
 		// (1) print the shell prompt
@@ -70,7 +76,7 @@ int main() {
 		background_flag +=0;
 
 		//Exit
-		if( strcmp( argv[0], "exit") == 0 ){
+		if(strcmp(argv[0], "exit") == 0 ) {
 			exit(0);
 		}
 
@@ -79,13 +85,13 @@ int main() {
 		int child_pid = fork();
 
 		if (child_pid == 0) {
-			execvp( *argv, argv);
+			execvp(*argv, argv);
 			if (background_flag) {
 				kill(getppid(), SIGUSR1); 
 			}
 		}
 		else {
-			if(!background_flag){
+			if(!background_flag) {
 				pid_t cid = waitpid(child_pid, NULL, 0);
 				cid = cid + 0;
 			}
@@ -94,7 +100,7 @@ int main() {
 	return 0;
 }
 
-void reapHandler(int sig){
+void reapHandler(int sig) {
 	waitpid(-1, NULL, WNOHANG);
 	sig += 0;
 }

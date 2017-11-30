@@ -25,7 +25,6 @@ void reapHandler(int sig);
 
 int main() { 
 	signal(SIGUSR1, reapHandler);
-	int reap_flag = 0;
 	int background_flag = 0;
 	char *argv[MAXARGS];
 	// TODO: Add a call to sigaction to register your SIGCHLD signal handler
@@ -86,11 +85,16 @@ int main() {
 			}
 		}
 		else {
-			pid_t cid = waitpid(child_pid, NULL, 0);
-			cid = cid + 0;
+			if(!background_flag){
+				pid_t cid = waitpid(child_pid, NULL, 0);
+				cid = cid + 0;
+			}
 		}
+	}
 	return 0;
 }
-void reapHandler(int sig) {
-	int ret = waitpid(-1, NULL, WNOHANG);
+
+void reapHandler(int sig){
+	waitpid(-1, NULL, WNOHANG);
+	sig += 0;
 }

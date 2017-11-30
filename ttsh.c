@@ -6,7 +6,7 @@
 
 // NOTE: all new includes should go after the following #define
 #define _XOPEN_SOURCE 600
-
+#include <signal.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
@@ -21,9 +21,11 @@
 
 // TODO: add your function prototypes here as necessary
 void add_queue(char *cmdline);
-
+void reapHandler(int sig);
 
 int main() { 
+	signal(SIGUSR1, reapHandler);
+	int reap_flag = 0;
 	int background_flag = 0;
 	char *argv[MAXARGS];
 	// TODO: Add a call to sigaction to register your SIGCHLD signal handler
@@ -79,11 +81,16 @@ int main() {
 
 		if (child_pid == 0) {
 			execvp( *argv, argv);
+			if (background_flag) {
+				kill(getppid(), SIGUSR1); 
+			}
 		}
 		else {
 			pid_t cid = waitpid(child_pid, NULL, 0);
-		cid = cid + 0;
+			cid = cid + 0;
 		}
-	}
 	return 0;
+}
+void reapHandler(int sig) {
+	int ret = waitpid(-1, NULL, WNOHANG);
 }

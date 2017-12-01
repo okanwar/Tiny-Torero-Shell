@@ -21,7 +21,7 @@
 
 // TODO: add your function prototypes here as necessary
 void add_queue(char *cmdline);
-void reapHandler(int sig);
+void reapHandler();
 
 
 
@@ -29,8 +29,6 @@ int main() {
 	signal(SIGUSR1, reapHandler);
 	int background_flag = 0;
 	char *argv[MAXARGS];
-	// TODO: Add a call to sigaction to register your SIGCHLD signal handler
-	// here. See the write-up for more details on sigaction.
 	struct sigaction sa;
 	sa.sa_handler = reapHandler;
 	sa.sa_flags = SA_NOCLDSTOP;
@@ -63,9 +61,6 @@ int main() {
 			exit(0);
 		}
 
-		// TODO: remove this line after you are done testing/debugging.
-		fprintf(stdout, "DEBUG: %s\n", cmdline);
-
 		//Put command in history
 		add_queue(cmdline);
 
@@ -77,6 +72,7 @@ int main() {
 
 		//Exit
 		if(strcmp(argv[0], "exit") == 0 ) {
+			printf("Exiting Tiny Torero Shell\n");
 			exit(0);
 		}
 
@@ -85,21 +81,23 @@ int main() {
 		int child_pid = fork();
 
 		if (child_pid == 0) {
-			if(execvp(*argv, argv) == -1){
+			if( strcmp(argv[0], "history") == 0){
+				print_history();
+				exit(0);
+			} else if(execvp(*argv, argv) == -1){
+				printf("ERROR: Command not found\n");
 				exit(1);
 			}
 		}
 		else {
 			if(!background_flag) {
-				pid_t cid = waitpid(child_pid, NULL, 0);
-				cid = cid + 0;
+				waitpid(child_pid, NULL, 0);
 			}
 		}
 	}
 	return 0;
 }
 
-void reapHandler(int sig) {
+void reapHandler() {
 	waitpid(-1, NULL, WNOHANG);
-	sig += 0;
 }

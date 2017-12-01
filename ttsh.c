@@ -68,7 +68,6 @@ int main() {
 		// (3) make a call to parseArguments function to parse it into its argv
 		// format
 		background_flag = parseArguments(cmdline,argv);
-		background_flag +=0;
 
 		//Exit
 		if(strcmp(argv[0], "exit") == 0 ) {
@@ -80,7 +79,6 @@ int main() {
 		// that the user entered, and then execute it
 		int child_pid = fork();
 		int ret;
-
 		if (child_pid == 0) {
 			if( strcmp(argv[0], "history") == 0){
 				print_history();

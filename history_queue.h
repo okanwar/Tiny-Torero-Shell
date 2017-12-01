@@ -22,5 +22,9 @@ typedef struct HistoryEntry HistoryEntry;
 
 
 // TODO: fill in prototypes like you did for circqueue.h in lab session 10
+//
+
+void add_queue(char *cmd_line);
+void print_history();
 
 #endif

@@ -92,7 +92,7 @@ int main() {
 		else {
 			if(!background_flag) {
 				ret = waitpid(child_pid, NULL, 0);
-				if( ret > -1) 
+				if( ret == -1) 
 					printf("Error: Child not reaped properly\n");
 			}
 		}

@@ -22,7 +22,7 @@
 // TODO: add your function prototypes here as necessary
 void add_queue(char *cmdline);
 void reapHandler();
-void runCommand(char *argv);
+void runCommand(char **argv);
 
 
 int main() { 
@@ -86,8 +86,9 @@ int main() {
 			if( strcmp(argv[0], "history") == 0){
 				print_history();
 			}
-		   	else if (strcmp(argv[0], "!") == 0) {
-				cmd_string = check_history(argv[1]);
+		   	else if (strcmp( argv[0], "!") == 0) {
+				printf("!\n");
+				cmd_string = check_history( strtol(argv[1],NULL,10 ) );
 				if (cmd_string != NULL) {
 					parseArguments(cmd_string, argv);
 				}
@@ -101,9 +102,10 @@ int main() {
 		}
 		else {
 			if(!background_flag) {
-				ret = waitpid(child_pid, NULL, 0);
+				printf("foreground\n");
+				ret = waitpid(child_pid, NULL, WNOHANG);
 				if( ret == -1) 
-					printf("Error: Child not reaped properly\n");
+					printf("Error1: Child not reaped properly\n");
 			}
 		}
 	}
@@ -113,12 +115,15 @@ int main() {
 void reapHandler() {
 	int ret = waitpid(-1, NULL, WNOHANG);
 	if (ret == -1){
-		printf("Error: Child not reaped properly\n");
+		printf("Error2: Child not reaped properly\n");
+	} else {
+		printf("%d was reaped\n", ret);
 	}
 }
-void runCommand(char *argv) {
+void runCommand(char **argv) {
 	int ret = execvp(*argv, argv);
 	if (ret == -1) {
 		printf("ERROR: Command not found\n");
 	}
+	exit(0);
 }

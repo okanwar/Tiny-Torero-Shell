@@ -102,5 +102,7 @@ int main() {
 
 void reapHandler() {
 	int ret = waitpid(-1, NULL, WNOHANG);
-	ret+=0;
+	if (ret == -1){
+		printf("Error: Child not reaped properly\n");
+	}
 }

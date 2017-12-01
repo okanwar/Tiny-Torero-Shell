@@ -95,15 +95,12 @@ int main() {
 			}	
 			else {
 				runCommand(argv);
-//				if( (ret = execvp( *argv, argv)) == -1){
-//					printf("ERROR: Command not found\n");
-//				}
 			}
 		}
 		else {
-			if(!background_flag) {
+			if(background_flag == 0) {
 				printf("foreground\n");
-				ret = waitpid(child_pid, NULL, WNOHANG);
+				ret = waitpid(child_pid, NULL, 0);
 				if( ret == -1) 
 					printf("Error1: Child not reaped properly\n");
 			}

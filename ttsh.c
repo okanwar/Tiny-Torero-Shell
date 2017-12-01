@@ -68,6 +68,7 @@ int main() {
 		// (3) make a call to parseArguments function to parse it into its argv
 		// format
 		background_flag = parseArguments(cmdline,argv);
+		if(argv[0] == NULL){ continue; }
 
 		//Exit
 		if(strcmp(argv[0], "exit") == 0 ) {

@@ -99,7 +99,6 @@ int main() {
 		}
 		else {
 			if(background_flag == 0) {
-				printf("foreground\n");
 				ret = waitpid(child_pid, NULL, 0);
 				if( ret == -1) 
 					printf("Error1: Child not reaped properly\n");
@@ -113,7 +112,8 @@ void reapHandler() {
 	int ret = waitpid(-1, NULL, WNOHANG);
 	if (ret == -1){
 		printf("Error2: Child not reaped properly\n");
-	} else {
+	}
+   	else {
 		printf("%d was reaped\n", ret);
 	}
 }

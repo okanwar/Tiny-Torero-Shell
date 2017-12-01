@@ -64,4 +64,17 @@ void print_history(){
 	}
 }
 
-
+char* check_history(unsigned int index) {
+	int k;
+	for(k = queue_start; k < queue_size; k++) {
+		if(history[k].cmd_num == index) {
+		   return history[k].cmdline;
+		}
+	}
+	for(k = 0; k < queue_start; k++) {
+		if(history[k].cmd_num == index) {
+			return history[k].cmdline;
+		}
+	}
+	return NULL;
+}

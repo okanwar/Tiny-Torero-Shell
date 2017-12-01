@@ -26,5 +26,5 @@ typedef struct HistoryEntry HistoryEntry;
 
 void add_queue(char *cmd_line);
 void print_history();
-
+char* check_history(unsigned int index);
 #endif

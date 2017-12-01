@@ -22,12 +22,13 @@
 // TODO: add your function prototypes here as necessary
 void add_queue(char *cmdline);
 void reapHandler();
-
+void runCommand(char *argv);
 
 
 int main() { 
 	signal(SIGUSR1, reapHandler);
 	int background_flag = 0;
+	char *cmd_string;
 	char *argv[MAXARGS];
 	struct sigaction sa;
 	sa.sa_handler = reapHandler;
@@ -35,6 +36,7 @@ int main() {
 	sigaction(SIGCHLD, &sa, NULL);
 
 	while(1) {
+		cmd_string = NULL;
 		// (1) print the shell prompt
 		fprintf(stdout, "ttsh> ");  
 		fflush(stdout);
@@ -83,10 +85,18 @@ int main() {
 		if (child_pid == 0) {
 			if( strcmp(argv[0], "history") == 0){
 				print_history();
-			} else {
-				if( (ret = execvp( *argv, argv)) == -1){
-					printf("ERROR: Command not found\n");
+			}
+		   	else if (strcmp(argv[0], "!") == 0) {
+				cmd_string = check_history(argv[1]);
+				if (cmd_string != NULL) {
+					parseArguments(cmd_string, argv);
 				}
+			}	
+			else {
+				runCommand(argv);
+//				if( (ret = execvp( *argv, argv)) == -1){
+//					printf("ERROR: Command not found\n");
+//				}
 			}
 		}
 		else {
@@ -104,5 +114,11 @@ void reapHandler() {
 	int ret = waitpid(-1, NULL, WNOHANG);
 	if (ret == -1){
 		printf("Error: Child not reaped properly\n");
+	}
+}
+void runCommand(char *argv) {
+	int ret = execvp(*argv, argv);
+	if (ret == -1) {
+		printf("ERROR: Command not found\n");
 	}
 }

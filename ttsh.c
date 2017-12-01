@@ -23,12 +23,13 @@
 void add_queue(char *cmdline);
 void reapHandler();
 void runCommand(char **argv);
+int isHistoryCmd( char **str );
 
 
 int main() { 
 	signal(SIGUSR1, reapHandler);
 	int background_flag = 0;
-	char *cmd_string;
+//	char *cmd_string;
 	char *argv[MAXARGS];
 	struct sigaction sa;
 	sa.sa_handler = reapHandler;
@@ -36,7 +37,7 @@ int main() {
 	sigaction(SIGCHLD, &sa, NULL);
 
 	while(1) {
-		cmd_string = NULL;
+//		cmd_string = NULL;
 		// (1) print the shell prompt
 		fprintf(stdout, "ttsh> ");  
 		fflush(stdout);
@@ -85,23 +86,11 @@ int main() {
 		if (child_pid == 0) {
 			if( strcmp(argv[0], "history") == 0){
 				print_history();
-			}
-		   	else if (strcmp( argv[0], "!") == 0) {
-				printf("!\n");
-				cmd_string = check_history( strtol(argv[1],NULL,10 ) );
-				if (cmd_string != NULL) {
-					parseArguments(cmd_string, argv);
-				}
-			}	
-			else {
+		  	} else if ( (argv[1] == NULL) && ( isHistoryCmd(argv) != -1) ) {
+				printf("History cmd\n");
+			} else {
+				printf("runnning command\n");
 				runCommand(argv);
-				/*
-				ret = execvp( *argv, argv);
-				if( ret == -1 ){
-					printf("error: command not found\n");
-					exit(1);
-				}
-				*/
 			}
 		}
 		else {
@@ -116,12 +105,8 @@ int main() {
 }
 
 void reapHandler() {
-	/*int ret = waitpid(-1, NULL, WNOHANG);
-	if (ret == -1){
-		printf("Error reaping child");
-	}
-	*/
-	while( waitpid(-1, NULL, WNOHANG) > 0 ){
+	//Wait for processes
+	while( (waitpid(-1, NULL, WNOHANG)) > 0 ){
 	}
 }
 void runCommand(char **argv) {
@@ -131,4 +116,15 @@ void runCommand(char **argv) {
 		exit(1);
 	}
 	exit(0);
+}
+
+int isHistoryCmd( char **str){
+	int num = 0;
+	if( str[0][0] != ('!')){
+		return -1;
+	} else {
+		num = (int) str[0][1] - 'c';
+		printf("returning %d\n", num);
+		return num;
+	}
 }

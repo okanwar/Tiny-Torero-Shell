@@ -81,7 +81,7 @@ int main() {
 		// (4) Call a function that will determine how to execute the command
 		// that the user entered, and then execute it
 		int child_pid = fork();
-		int ret;
+		//int ret;
 		if (child_pid == 0) {
 			if( strcmp(argv[0], "history") == 0){
 				print_history();
@@ -95,13 +95,20 @@ int main() {
 			}	
 			else {
 				runCommand(argv);
+				/*
+				ret = execvp( *argv, argv);
+				if( ret == -1 ){
+					printf("error: command not found\n");
+					exit(1);
+				}
+				*/
 			}
 		}
 		else {
 			if(background_flag == 0) {
-				ret = waitpid(child_pid, NULL, 0);
-				if( ret == -1) 
+				if( waitpid(child_pid, NULL, 0) == -1 ){
 					printf("Error1: Child not reaped properly\n");
+				}
 			}
 		}
 	}
@@ -109,18 +116,19 @@ int main() {
 }
 
 void reapHandler() {
-	int ret = waitpid(-1, NULL, WNOHANG);
+	/*int ret = waitpid(-1, NULL, WNOHANG);
 	if (ret == -1){
-		printf("Error2: Child not reaped properly\n");
+		printf("Error reaping child");
 	}
-   	else {
-		printf("%d was reaped\n", ret);
+	*/
+	while( waitpid(-1, NULL, WNOHANG) > 0 ){
 	}
 }
 void runCommand(char **argv) {
 	int ret = execvp(*argv, argv);
 	if (ret == -1) {
 		printf("ERROR: Command not found\n");
+		exit(1);
 	}
 	exit(0);
 }

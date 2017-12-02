@@ -1,11 +1,11 @@
 COMP 280 - Project 06 (Tiny Torero Shell)
 
-1. Authors:
+1. Authors:Michae Dana and Om Kanwar
 
-2. Total Hours Spent on Project:
+2. Total Hours Spent on Project: 12
 
-3. Have you completed the advanced component?:
+3. Have you completed the advanced component?: Yes
 
-4. Project Bucks Used:
+4. Project Bucks Used:0
 
 5. (Optional) Additional Comments:

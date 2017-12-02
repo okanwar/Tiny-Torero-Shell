@@ -33,6 +33,7 @@ struct Flags{
 	int chdir_flag;
 	int history;
 	int parse_again;
+	int skip_command;
 };
 typedef struct Flags Flags;
 
@@ -141,26 +142,34 @@ void waitForChild(Flags *flags){
  * @param argv A pointer to the array of arguments
  * @param flags A pointer to the struct of flags
  *
- * @return Returns -1 if the command was exit and 1 if the program is going to
+ * @return Returns -1 if the command was exit or skip_command was set and 1 if the program is going to
  * continue or not exit
  */
 int parse(char *cmdline, char **argv, Flags *flags){
 
 	flags->background_flag = parseArguments(cmdline,argv);
 
-	if( strcmp( argv[0], "exit") == 0 ){
-		exit(0);
-	}
 	if((argv[0] == NULL) || (flags->chdir_flag == 1)){ 
-		return -1; 
+		flags->skip_command = 1; 
 	}
+	if( !flags->skip_command ){
+		if( strcmp( argv[0], "exit") == 0 ){
+			exit(0);
+		}
 
-	readArgs(argv, flags);
-	if( flags->parse_again ) {
 		readArgs(argv, flags);
-	}
-	
-	return 1;
+		if( flags->parse_again ) {
+			readArgs(argv, flags);
+		}
+	}	
+	switch(flags->skip_command){
+		case 1:
+			return -1;
+			break;
+		default:
+			return 1;
+			break;
+	};
 }
 
 /*
@@ -216,6 +225,7 @@ void readArgs(char **argv, Flags *flags) {
 		 cmd_string = check_history(ret);
 		 if( cmd_string == NULL){
 			 printf("Command not found in history\n");
+			 flags->skip_command = 1;
 			 return;
 		 }
 		 else {
@@ -285,6 +295,7 @@ char *addStrings( char *str1, char *str2){
  * to parse again
  */
 void resetPointers(Flags *flags){
+	flags->skip_command = 0;
 	flags->chdir_flag = 0;
 	flags->history = 0;
 	flags->parse_again = 0;
@@ -296,6 +307,7 @@ void resetPointers(Flags *flags){
  * @param flags A pointer to the flags struct
  */
 void initFlags(Flags *flags){
+	flags->skip_command = 0;
 	flags->background_flag = 0;
 	flags->chdir_flag = 0;
 	flags->history = 0;

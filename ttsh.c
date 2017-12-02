@@ -18,24 +18,31 @@
 #include "history_queue.h"
 
 
+//Flag struct
+struct Flags{
+	int background_flag;
+	int chdir_flag;
+	int history;
+	int parse_again;
+};
+typedef struct Flags Flags;
+
 
 // TODO: add your function prototypes here as necessary
 void add_queue(char *cmdline);
 void reapHandler();
-void readArgs(char **argsv, int *background_flag, int *chdir_flag, int *parse_again, int *history);
+void readArgs(char **argsv, Flags *flags);
 void terminate(char **argv);
 void runCommand(char **argv);
 int isHistoryCmd( char **str );
 char *addStrings( char *str1, char *str2);
-void resetPointers(int *chdir, int *history, int *parse_again);
-
+void resetPointers(Flags *flags);
+void initFlags(Flags *flags);
 
 int main() { 
 	signal(SIGUSR1, reapHandler);
-	int background_flag = 0;
-	int chdir_flag = 0;
-	int history = 0;
-	int parse_again = 0;
+	Flags flags;
+	initFlags(&flags);
 	char *argv[MAXARGS];
 	struct sigaction sa;
 	sa.sa_handler = reapHandler;
@@ -43,7 +50,7 @@ int main() {
 	sigaction(SIGCHLD, &sa, NULL);
 
 	while(1) {
-		resetPointers( &chdir_flag, &history, &parse_again);
+		resetPointers( &flags );
 		// (1) print the shell prompt
 		fprintf(stdout, "ttsh> ");  
 		fflush(stdout);
@@ -74,24 +81,24 @@ int main() {
 		add_queue(cmdline);
 
 		//Parse arguments
-		background_flag = parseArguments(cmdline,argv);
-		if((argv[0] == NULL) || (chdir_flag == 1)){ continue; }
-		readArgs(argv, &background_flag, &chdir_flag, &parse_again, &history);
-		if( parse_again ) {readArgs(argv, &background_flag, &chdir_flag, &parse_again, &history);}
+		flags.background_flag = parseArguments(cmdline,argv);
+		if((argv[0] == NULL) || (flags.chdir_flag == 1)){ continue; }
+		readArgs(argv, &flags);
+		if( flags.parse_again ) {readArgs(argv, &flags);}
 		//Check if command was exit
 		terminate(argv);
 
 		//Fork and execute command
 		int child_pid = fork();
 		if (child_pid == 0) {		//Child
-			if( history ){
+			if( flags.history ){
 				exit(0);
 			} else {
 				runCommand(argv);
 			}
 		}
 		else {						//Parent
-			if(background_flag == 0) {
+			if(flags.background_flag == 0) {
 				if( waitpid( -1, NULL, 0) < 0){
 					printf("Error: Child not reaped properly\n");
 				}
@@ -122,8 +129,8 @@ void runCommand(char **argv) {
 		printf("ERROR: Command not found\n");
 		exit(1);
 	}
-	//exit(2);
-	return;
+	exit(2);
+//	return;
 }
 
 /*
@@ -168,7 +175,7 @@ void terminate(char **argv) {
  * command
  *
  */
-void readArgs(char **argv, int *background_flag, int *chdir_flag, int *parse_again, int *history) {
+void readArgs(char **argv, Flags *flags) {
 	int ret = 0;
 	char *cmd_string = NULL;
 	if((argv[1] == NULL) && ((ret = isHistoryCmd(argv)) != -1) ){
@@ -177,13 +184,13 @@ void readArgs(char **argv, int *background_flag, int *chdir_flag, int *parse_aga
 			 printf("Command not found in history\n");
 		 }
 		 else {
-			*background_flag = parseArguments( cmd_string, argv);
+			flags->background_flag = parseArguments( cmd_string, argv);
 			if( strcmp( argv[0], "cd") == 0 ){
-			   *parse_again = 1;
+			   flags->parse_again = 1;
 		  	}	   
 		 }
 	} else if( strcmp( argv[0], "cd" ) == 0){
-		*chdir_flag = 1;
+		flags->chdir_flag = 1;
 		if (argv[1] == NULL) {
 		   chdir(getenv("HOME"));
 		   return;
@@ -195,7 +202,7 @@ void readArgs(char **argv, int *background_flag, int *chdir_flag, int *parse_aga
 			}
 		}
  	} else if( strcmp( argv[0], "history") == 0) {
-		*history = 1;
+		flags->history = 1;
 		print_history();
 	}		
 }
@@ -225,8 +232,20 @@ char *addStrings( char *str1, char *str2){
  * @param parse_again A pointer to a commmand indicating we are going to have
  * to parse again
  */
-void resetPointers(int *chdir_flag, int *history, int *parse_again){
-	*chdir_flag = 0;
-	*history = 0;
-	*parse_again = 0;
+void resetPointers(Flags *flags){
+	flags->chdir_flag = 0;
+	flags->history = 0;
+	flags->parse_again = 0;
 }
+
+/*
+ * A function to initialize the flags to zero
+ *
+ * @param flags A pointer to the flags struct
+ */
+void initFlags(Flags *flags){
+	flags->background_flag = 0;
+	flags->chdir_flag = 0;
+	flags->history = 0;
+	flags->parse_again = 0;
+}	

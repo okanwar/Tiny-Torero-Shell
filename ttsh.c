@@ -92,7 +92,7 @@ int main() {
 		}
 		else {						//Parent
 			if(background_flag == 0) {
-				if( waitpid(child_pid, NULL, 0) == -1 ){
+				if( waitpid( -1, NULL, 0) < 0){
 					printf("Error: Child not reaped properly\n");
 				}
 			}
@@ -102,20 +102,39 @@ int main() {
 }
 
 
+/*
+ * A handler to reap zombie processes
+ */
 void reapHandler() {
 	//Wait for processes
 	while( (waitpid(-1, NULL, WNOHANG)) > 0 ){
 	}
 }
+
+/*
+ * A function to run a give array of arguments
+ *
+ * @param argv A pointer to the array of arguments
+ */
 void runCommand(char **argv) {
 	int ret = execvp(*argv, argv);
 	if (ret == -1) {
 		printf("ERROR: Command not found\n");
 		exit(1);
 	}
-	exit(0);
+	//exit(2);
+	return;
 }
 
+/*
+ * A function to determine if the command is executing a command
+ * from history
+ *
+ * @param str A pointer to the array of arguments
+ *
+ * @return Returns -1 if not running a command from history, otherwise returns
+ * the number of the command
+ */
 int isHistoryCmd( char **str){
 	int num = 0;
 	if( str[0][0] != ('!')){
@@ -126,6 +145,11 @@ int isHistoryCmd( char **str){
 	}
 }
 
+/*
+ * A function to check if the command entered was exit
+ *
+ * @param argv A pointer to the argument array
+ */
 void terminate(char **argv) {
 	if(strcmp(argv[0], "exit") == 0 ) {
 		printf("Exiting Tiny Torero Shell\n");
@@ -133,6 +157,17 @@ void terminate(char **argv) {
 	}
 }
 
+/*
+ * A function to handle the given arguments
+ *
+ * @param argv A pointer to the array of arguments
+ * @param background_flag A pointer to the flag for background processes
+ * @param chdir A pointer to the flag indicating we are changing directories
+ * @param parse_again A pointer to the flag indicating repeat parsing
+ * @param history A pointer to the flag indicating we are running the history
+ * command
+ *
+ */
 void readArgs(char **argv, int *background_flag, int *chdir_flag, int *parse_again, int *history) {
 	int ret = 0;
 	char *cmd_string = NULL;
@@ -165,6 +200,14 @@ void readArgs(char **argv, int *background_flag, int *chdir_flag, int *parse_aga
 	}		
 }
 
+/*
+ * A function to combine two strings
+ *
+ * @param str1 The first string to be combined
+ * @param str2 The second string to be combined
+ *
+ * @return A pointer to the string that str1 and str2 were combined into
+ */
 char *addStrings( char *str1, char *str2){
 	char *str3 = malloc(1 + strlen(str1) + strlen(str2) );
 	strcpy( str3, str1 );
@@ -172,6 +215,16 @@ char *addStrings( char *str1, char *str2){
 	return str3;
 }
 
+/*
+ * A function for reseting a number of pointers to zero
+ *
+ * @param chdir_flag A pointer to a flag indicating we are changing
+ * directories
+ * @param history A pointer a flag indicating we are runnning the history
+ * command
+ * @param parse_again A pointer to a commmand indicating we are going to have
+ * to parse again
+ */
 void resetPointers(int *chdir_flag, int *history, int *parse_again){
 	*chdir_flag = 0;
 	*history = 0;

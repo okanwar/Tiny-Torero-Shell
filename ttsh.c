@@ -38,6 +38,7 @@ int isHistoryCmd( char **str );
 char *addStrings( char *str1, char *str2);
 void resetPointers(Flags *flags);
 void initFlags(Flags *flags);
+void changeDir(char **argv);
 
 int main() { 
 	signal(SIGUSR1, reapHandler);
@@ -195,16 +196,28 @@ void readArgs(char **argv, Flags *flags) {
 		   chdir(getenv("HOME"));
 		   return;
 		} else {
-	  		char cwd[4000];
-			getcwd( cwd, sizeof(cwd));
-			if( chdir( addStrings( cwd, argv[1]) ) == -1 ){
-				printf("Invalid directory\n");
-			}
+			changeDir( argv );
 		}
  	} else if( strcmp( argv[0], "history") == 0) {
 		flags->history = 1;
 		print_history();
 	}		
+}
+
+/*
+ * A function used to change directories
+ *
+ * @param argv A pointer to an array of arguments
+ *
+ */
+void changeDir(char **argv){
+	char wd[4000];
+	char *dir;
+	getcwd( wd, sizeof(wd) );
+	if( chdir( dir = addStrings( wd, argv[1]) ) == -1){
+		printf("Invalid directory\n");
+	}
+	free(dir);
 }
 
 /*
@@ -216,8 +229,13 @@ void readArgs(char **argv, Flags *flags) {
  * @return A pointer to the string that str1 and str2 were combined into
  */
 char *addStrings( char *str1, char *str2){
-	char *str3 = malloc(1 + strlen(str1) + strlen(str2) );
+	int size = 1;
+	if( str2[0] != '/' ){
+		size = 2;
+	}
+	char *str3 = malloc(size + strlen(str1) + strlen(str2) );
 	strcpy( str3, str1 );
+	strcat( str3, "/" );
 	strcat( str3, str2 );
 	return str3;
 }

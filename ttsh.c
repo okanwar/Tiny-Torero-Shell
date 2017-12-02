@@ -1,7 +1,16 @@
 /*
  * The Tiny Torero Shell (TTSH)
  *
- * Add your top-level comments here.
+ * ttsh.c
+ *
+ * This file will run a tiny torero shell capable of executing shell commands
+ * as well as running commands from history and changing directories
+ *
+ * This file is part of COMP 280, Lab 7
+ *
+ * Authors:
+ * 	1. Michael Dana
+ * 	2. Om Kanwar
  */
 
 // NOTE: all new includes should go after the following #define
@@ -39,6 +48,8 @@ char *addStrings( char *str1, char *str2);
 void resetPointers(Flags *flags);
 void initFlags(Flags *flags);
 void changeDir(char **argv);
+int parse(char *cmdline, char **argv, Flags *flags);
+void waitForChild(Flags *flags);
 
 int main() { 
 	signal(SIGUSR1, reapHandler);
@@ -82,12 +93,7 @@ int main() {
 		add_queue(cmdline);
 
 		//Parse arguments
-		flags.background_flag = parseArguments(cmdline,argv);
-		if((argv[0] == NULL) || (flags.chdir_flag == 1)){ continue; }
-		readArgs(argv, &flags);
-		if( flags.parse_again ) {readArgs(argv, &flags);}
-		//Check if command was exit
-		terminate(argv);
+		if( parse( cmdline, argv, &flags) == -1 ){ continue; }
 
 		//Fork and execute command
 		int child_pid = fork();
@@ -99,16 +105,11 @@ int main() {
 			}
 		}
 		else {						//Parent
-			if(flags.background_flag == 0) {
-				if( waitpid( -1, NULL, 0) < 0){
-					printf("Error: Child not reaped properly\n");
-				}
-			}
+			waitForChild(&flags);
 		}
 	}
 	return 0;
 }
-
 
 /*
  * A handler to reap zombie processes
@@ -117,6 +118,49 @@ void reapHandler() {
 	//Wait for processes
 	while( (waitpid(-1, NULL, WNOHANG)) > 0 ){
 	}
+}
+
+/*
+ * A function to wait for child to exit
+ *
+ * @param flags A pointer to the struct of flags
+ *
+ */
+void waitForChild(Flags *flags){
+	if( flags->background_flag == 0 ){ //is backgrond process
+		if( waitpid( -1 ,NULL, 0) < 0){
+			printf("Error: Child not reaped properly\n");
+		}
+	}
+}
+
+/*
+ * A function to handle the parsing of arguments
+ *
+ * @param cmdline The string of the command
+ * @param argv A pointer to the array of arguments
+ * @param flags A pointer to the struct of flags
+ *
+ * @return Returns -1 if the command was exit and 1 if the program is going to
+ * continue or not exit
+ */
+int parse(char *cmdline, char **argv, Flags *flags){
+
+	flags->background_flag = parseArguments(cmdline,argv);
+
+	if( strcmp( argv[0], "exit") == 0 ){
+		exit(0);
+	}
+	if((argv[0] == NULL) || (flags->chdir_flag == 1)){ 
+		return -1; 
+	}
+
+	readArgs(argv, flags);
+	if( flags->parse_again ) {
+		readArgs(argv, flags);
+	}
+	
+	return 1;
 }
 
 /*
@@ -153,17 +197,6 @@ int isHistoryCmd( char **str){
 	}
 }
 
-/*
- * A function to check if the command entered was exit
- *
- * @param argv A pointer to the argument array
- */
-void terminate(char **argv) {
-	if(strcmp(argv[0], "exit") == 0 ) {
-		printf("Exiting Tiny Torero Shell\n");
-		exit(0);
-	}
-}
 
 /*
  * A function to handle the given arguments
@@ -183,6 +216,7 @@ void readArgs(char **argv, Flags *flags) {
 		 cmd_string = check_history(ret);
 		 if( cmd_string == NULL){
 			 printf("Command not found in history\n");
+			 return;
 		 }
 		 else {
 			flags->background_flag = parseArguments( cmd_string, argv);

@@ -1,7 +1,15 @@
 /*
  * The Tiny Torero Shell (TTSH)
  *
- * Add your top-level comments here.
+ * history_queue.c
+ *
+ * This file contains methods to interact with the history queue
+ *
+ * This file is part of COMP 280 Lab 7
+ *
+ * Authors:
+ * 	1. Michael Dana
+ * 	2. Om Kanwar
  */
 #include <stdlib.h>
 #include <string.h>
@@ -19,16 +27,6 @@ static int queue_next = 0;
 static int queue_size = 0;
 static int cmd_num = 0; 
 
-// Look at your lab 10 implementation of a circular queue of integers and
-// reuse liberally.
-
-// TODO: Add some more global variables for the history list.
-//       These should be the only globals in your program
-//       They should be static so that only functions in this file can
-//       access them.
-
-
-// TODO: implement your history queue functions here
 
 void add_queue(char *cmd_line){
 	

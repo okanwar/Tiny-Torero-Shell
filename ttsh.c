@@ -29,7 +29,8 @@ int isHistoryCmd( char **str );
 int main() { 
 	signal(SIGUSR1, reapHandler);
 	int background_flag = 0;
-//	char *cmd_string;
+	int ret;
+	char *cmd_string;
 	char *argv[MAXARGS];
 	struct sigaction sa;
 	sa.sa_handler = reapHandler;
@@ -37,7 +38,7 @@ int main() {
 	sigaction(SIGCHLD, &sa, NULL);
 
 	while(1) {
-//		cmd_string = NULL;
+		cmd_string = NULL;
 		// (1) print the shell prompt
 		fprintf(stdout, "ttsh> ");  
 		fflush(stdout);
@@ -73,23 +74,28 @@ int main() {
 		background_flag = parseArguments(cmdline,argv);
 		if(argv[0] == NULL){ continue; }
 
+		if( (argv[1] == NULL) && ( (ret = isHistoryCmd(argv)) != -1) ){
+			cmd_string = check_history(ret);
+			if( cmd_string == NULL){
+				printf("Command not found in history\n");
+			} else {
+				background_flag = parseArguments( cmd_string, argv);
+			}
+		}
+
 		//Exit
 		if(strcmp(argv[0], "exit") == 0 ) {
 			printf("Exiting Tiny Torero Shell\n");
 			exit(0);
 		}
-
 		// (4) Call a function that will determine how to execute the command
 		// that the user entered, and then execute it
 		int child_pid = fork();
-		//int ret;
 		if (child_pid == 0) {
 			if( strcmp(argv[0], "history") == 0){
 				print_history();
-		  	} else if ( (argv[1] == NULL) && ( isHistoryCmd(argv) != -1) ) {
-				printf("History cmd\n");
+				exit(0);
 			} else {
-				printf("runnning command\n");
 				runCommand(argv);
 			}
 		}
@@ -103,6 +109,7 @@ int main() {
 	}
 	return 0;
 }
+
 
 void reapHandler() {
 	//Wait for processes
@@ -123,8 +130,7 @@ int isHistoryCmd( char **str){
 	if( str[0][0] != ('!')){
 		return -1;
 	} else {
-		num = (int) str[0][1] - 'c';
-		printf("returning %d\n", num);
+		num = strtol( str[0]+1, NULL, 10);
 		return num;
 	}
 }

@@ -22,6 +22,8 @@
 // TODO: add your function prototypes here as necessary
 void add_queue(char *cmdline);
 void reapHandler();
+void readArgs(char **argsv, int *background_flag);
+void terminate(char **argv);
 void runCommand(char **argv);
 int isHistoryCmd( char **str );
 
@@ -29,8 +31,6 @@ int isHistoryCmd( char **str );
 int main() { 
 	signal(SIGUSR1, reapHandler);
 	int background_flag = 0;
-	int ret;
-	char *cmd_string;
 	char *argv[MAXARGS];
 	struct sigaction sa;
 	sa.sa_handler = reapHandler;
@@ -38,7 +38,6 @@ int main() {
 	sigaction(SIGCHLD, &sa, NULL);
 
 	while(1) {
-		cmd_string = NULL;
 		// (1) print the shell prompt
 		fprintf(stdout, "ttsh> ");  
 		fflush(stdout);
@@ -73,21 +72,9 @@ int main() {
 		// format
 		background_flag = parseArguments(cmdline,argv);
 		if(argv[0] == NULL){ continue; }
+		readArgs(argv, &background_flag);
+		terminate(argv);
 
-		if( (argv[1] == NULL) && ( (ret = isHistoryCmd(argv)) != -1) ){
-			cmd_string = check_history(ret);
-			if( cmd_string == NULL){
-				printf("Command not found in history\n");
-			} else {
-				background_flag = parseArguments( cmd_string, argv);
-			}
-		}
-
-		//Exit
-		if(strcmp(argv[0], "exit") == 0 ) {
-			printf("Exiting Tiny Torero Shell\n");
-			exit(0);
-		}
 		// (4) Call a function that will determine how to execute the command
 		// that the user entered, and then execute it
 		int child_pid = fork();
@@ -133,4 +120,36 @@ int isHistoryCmd( char **str){
 		num = strtol( str[0]+1, NULL, 10);
 		return num;
 	}
+}
+
+void terminate(char **argv) {
+	if(strcmp(argv[0], "exit") == 0 ) {
+		printf("Exiting Tiny Torero Shell\n");
+		exit(0);
+	}
+}
+
+void readArgs(char **argv, int *background_flag) {
+	int ret = 0;
+	char *cmd_string = NULL;
+	if((argv[1] == NULL) && ((ret = isHistoryCmd(argv)) != -1) ){
+		 cmd_string = check_history(ret);
+		 if( cmd_string == NULL){
+			 printf("Command not found in history\n");
+		 }
+		 else {
+			*background_flag = parseArguments( cmd_string, argv);
+		 }
+	}
+	else {
+		if (argv[1] == NULL) {
+		   chdir(getenv("HOME"));
+		   return;
+		}
+		chdir(getenv(argv[1]));
+		if (chdir(argv[1]) == -1) {
+			printf("Directory not found\n");
+			return;
+		}
+ 	}		
 }

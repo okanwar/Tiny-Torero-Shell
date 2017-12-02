@@ -22,15 +22,18 @@
 // TODO: add your function prototypes here as necessary
 void add_queue(char *cmdline);
 void reapHandler();
-void readArgs(char **argsv, int *background_flag);
+void readArgs(char **argsv, int *background_flag, int *chdir_flag, int *parse_again);
 void terminate(char **argv);
 void runCommand(char **argv);
 int isHistoryCmd( char **str );
+char *addStrings( char *str1, char *str2);
 
 
 int main() { 
 	signal(SIGUSR1, reapHandler);
 	int background_flag = 0;
+	int chrdir_flag = 0;
+	int parse_again = 0;
 	char *argv[MAXARGS];
 	struct sigaction sa;
 	sa.sa_handler = reapHandler;
@@ -38,6 +41,8 @@ int main() {
 	sigaction(SIGCHLD, &sa, NULL);
 
 	while(1) {
+		chrdir_flag = 0;
+		parse_again = 0;
 		// (1) print the shell prompt
 		fprintf(stdout, "ttsh> ");  
 		fflush(stdout);
@@ -71,8 +76,9 @@ int main() {
 		// (3) make a call to parseArguments function to parse it into its argv
 		// format
 		background_flag = parseArguments(cmdline,argv);
-		if(argv[0] == NULL){ continue; }
-		readArgs(argv, &background_flag);
+		if((argv[0] == NULL) || (chrdir_flag == 1)){ continue; }
+		readArgs(argv, &background_flag, &chrdir_flag, &parse_again);
+		if( parse_again ) {readArgs(argv, &background_flag, &chrdir_flag, &parse_again);}
 		terminate(argv);
 
 		// (4) Call a function that will determine how to execute the command
@@ -129,27 +135,45 @@ void terminate(char **argv) {
 	}
 }
 
-void readArgs(char **argv, int *background_flag) {
+void readArgs(char **argv, int *background_flag, int *chrdir_flag, int *parse_again) {
 	int ret = 0;
 	char *cmd_string = NULL;
+	printf("%s\n", argv[0]);
 	if((argv[1] == NULL) && ((ret = isHistoryCmd(argv)) != -1) ){
+		printf("ret:%d\n", ret);
 		 cmd_string = check_history(ret);
+		 printf("CMD:%s\n", cmd_string);
 		 if( cmd_string == NULL){
 			 printf("Command not found in history\n");
 		 }
 		 else {
 			*background_flag = parseArguments( cmd_string, argv);
+			if( strcmp( argv[0], "cd") == 0 ){
+			   *parse_again = 1;
+		  	}	   
 		 }
 	}
-	else {
+	else if( strcmp( argv[0], "cd" ) == 0){
+		*chrdir_flag = 1;
 		if (argv[1] == NULL) {
 		   chdir(getenv("HOME"));
 		   return;
-		}
-		chdir(getenv(argv[1]));
-		if (chdir(argv[1]) == -1) {
-			printf("Directory not found\n");
-			return;
+		} else {
+			char cwd[4000];
+			getcwd( cwd, sizeof(cwd));
+			char *dir = malloc(1 + strlen(cwd) + strlen(argv[1]) );
+			strcpy( dir, cwd);
+			strcat( dir, argv[1] );
+			if( chdir( dir ) == -1 ){
+				printf("Invalid directory\n");
+			}
 		}
  	}		
+}
+
+char *addStrings( char *str1, char *str2){
+	char *str3 = malloc(1 + strlen(str1) + strlen(str2) );
+	strcpy( str3, str1 );
+	strcat( str3, str2 );
+	return str3;
 }

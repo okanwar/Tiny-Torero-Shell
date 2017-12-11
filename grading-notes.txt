@@ -1,0 +1,17 @@
+Authors:
+    26	Michael Dana
+     8	Om Kanwar
+
+The following requirements were not met:
+- Have well commented source code.
+- Place the actual command run using the !num command (e.g. “./siesta &”) in
+  thie history queue, rather than a literal “!num”.
+- Have a correct implementation of the built-in cd command that changes the
+  current working directory.
+
+Grading Notes:
+- Missing comments in history_queue.c and .h files.
+- !num shows up as !num in history (not original command)
+- cd /home/sat/public doesn't work
+- cd public didn't work (when I was in /home/sat)
+- should not use both signal and sigaction functions...

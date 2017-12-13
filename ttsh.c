@@ -38,7 +38,6 @@ struct Flags{
 typedef struct Flags Flags;
 
 
-// TODO: add your function prototypes here as necessary
 void add_queue(char *cmdline);
 void reapHandler();
 void readArgs(char **argsv, Flags *flags);
@@ -53,7 +52,6 @@ int parse(char *cmdline, char **argv, Flags *flags);
 void waitForChild(Flags *flags);
 
 int main() { 
-	signal(SIGUSR1, reapHandler);
 	Flags flags;
 	initFlags(&flags);
 	char *argv[MAXARGS];
@@ -91,8 +89,9 @@ int main() {
 		}
 
 		//Put command in history
-		add_queue(cmdline);
-
+		if(cmdline[0] != '!') {
+			add_queue(cmdline);
+		}
 		//Parse arguments
 		if( parse( cmdline, argv, &flags) == -1 ){ continue; }
 
@@ -223,6 +222,7 @@ void readArgs(char **argv, Flags *flags) {
 	char *cmd_string = NULL;
 	if((argv[1] == NULL) && ((ret = isHistoryCmd(argv)) != -1) ){
 		 cmd_string = check_history(ret);
+		 add_queue(cmd_string);
 		 if( cmd_string == NULL){
 			 printf("Command not found in history\n");
 			 flags->skip_command = 1;

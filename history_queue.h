@@ -21,9 +21,7 @@ struct HistoryEntry {
 typedef struct HistoryEntry HistoryEntry;
 
 
-// TODO: fill in prototypes like you did for circqueue.h in lab session 10
-//
-
+//forward declarations of our functions that will be used in our shell
 void add_queue(char *cmd_line);
 void print_history();
 char* check_history(unsigned int index);

@@ -22,12 +22,16 @@
 // static: means these variables are only in scope in this .c module
 static HistoryEntry history[MAXHIST]; 
 
+//items to initialize and start queue
 static int queue_start = 0;
 static int queue_next = 0;
 static int queue_size = 0;
 static int cmd_num = 0; 
 
-
+/**
+ * initializes queue, adds elements to queue, and updates queue
+ * @param *cmd_line The command line that we want to add to our queue
+ */
 void add_queue(char *cmd_line){
 	
 	if(queue_size == MAXHIST){
@@ -50,8 +54,14 @@ void add_queue(char *cmd_line){
 	if(queue_size < MAXHIST){
 		queue_size++;
 	}
-}	
+}
 
+/**
+ * This function prints out a list of most recent commands done by our shell
+ *
+ * This function takes no parameters, it only prints out information
+ * for loops are used to iterate over our queue, to print out all commands
+ */
 void print_history(){
 	int i;
 	for(i = queue_start; i < queue_size; i++){
@@ -61,6 +71,13 @@ void print_history(){
 		printf("%d\t%s", history[i].cmd_num, history[i].cmdline);
 	}
 }
+/**
+ * Returns the command string at the specified index and looks at our history
+ * qeueue
+ *
+ * @param index the position in our history queue that returns the specified
+ * string
+ */
 
 char* check_history(unsigned int index) {
 	int k;

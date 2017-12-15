@@ -256,12 +256,16 @@ void readArgs(char **argv, Flags *flags) {
  */
 void changeDir(char **argv){
 	char wd[4000];
-	char *dir;
+	char dir[4000];
 	getcwd( wd, sizeof(wd) );
-	if( chdir( dir = addStrings( wd, argv[1]) ) == -1){
+	if( strstr(argv[1], "/home") != NULL ){
+		strcpy(dir, argv[1]);
+	} else {
+		strcpy(dir,addStrings( wd, argv[1] ));
+	}
+	if( chdir( dir ) == -1){
 		printf("Invalid directory\n");
 	}
-	free(dir);
 }
 
 /*

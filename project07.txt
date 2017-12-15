@@ -9,3 +9,7 @@ COMP 280 - Project 06 (Tiny Torero Shell)
 4. Project Bucks Used:0
 
 5. (Optional) Additional Comments:
+	System gives us a print error when changing directories, but directories are
+	still changed successfully. Unsure of where this print error is coming
+	from, but does not stop program from running perfectly in anyway. cd
+	function still works as planned.

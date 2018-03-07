@@ -79,7 +79,7 @@ void print_history(){
  * string
  */
 
-char* check_history(unsigned int index) {
+char* check_history(int index) {
 	int k;
 	for(k = queue_start; k < queue_size; k++) {
 		if(history[k].cmd_num == index) {
@@ -92,4 +92,22 @@ char* check_history(unsigned int index) {
 		}
 	}
 	return NULL;
+}
+char* repeatCmd() {
+	int k;
+	int n = 0;
+	int m = 0;
+	for(k = queue_start; k < queue_size; k++) {
+		if(history[k].cmd_num > n) {
+			m = k;
+			n = history[k].cmd_num;
+		}
+	}
+	for(k = 0; k < queue_start; k++) {
+		if(history[k].cmd_num > n) {
+			m = k;
+			n = history[k].cmd_num;
+		}	
+	}
+	return history[m].cmdline;
 }

@@ -135,43 +135,6 @@ void waitForChild(Flags *flags){
 }
 
 /*
- * A function to handle the parsing of arguments
- *
- * @param cmdline The string of the command
- * @param argv A pointer to the array of arguments
- * @param flags A pointer to the struct of flags
- *
- * @return Returns -1 if the command was exit or skip_command was set and 1 if the program is going to
- * continue or not exit
- */
-int parse(char *cmdline, char **argv, Flags *flags){
-
-	flags->background_flag = parseArguments(cmdline,argv);
-
-	if((argv[0] == NULL) || (flags->chdir_flag == 1)){ 
-		flags->skip_command = 1; 
-	}
-	if( !flags->skip_command ){
-		if( strcmp( argv[0], "exit") == 0 ){
-			exit(0);
-		}
-
-		readArgs(argv, flags);
-		if( flags->parse_again ) {
-			readArgs(argv, flags);
-		}
-	}	
-	switch(flags->skip_command){
-		case 1:
-			return -1;
-			break;
-		default:
-			return 1;
-			break;
-	};
-}
-
-/*
  * A function to run a give array of arguments
  *
  * @param argv A pointer to the array of arguments
@@ -213,53 +176,6 @@ int isHistoryCmd( char **str){
 	}
 }
 /*
- * A function to handle the given arguments
- *
- * @param argv A pointer to the array of arguments
- * @param background_flag A pointer to the flag for background processes
- * @param chdir A pointer to the flag indicating we are changing directories
- * @param parse_again A pointer to the flag indicating repeat parsing
- * @param history A pointer to the flag indicating we are running the history
- * command
- *
- */
-void readArgs(char **argv, Flags *flags) {
-	int ret = 0;
-	char *cmd_string = NULL;
-	if((argv[1] == NULL) && ((ret = isHistoryCmd(argv)) != -1) ){
-		 if(ret != -2) {
-			 cmd_string = check_history(ret);
-		}
-		else {
-			cmd_string = repeatCmd();
-		}
-		 add_queue(cmd_string);
-		 if( cmd_string == NULL){
-			 printf("Command not found in history\n");
-			 flags->skip_command = 1;
-			 return;
-		 }
-		 else {
-			flags->background_flag = parseArguments( cmd_string, argv);
-			if( strcmp( argv[0], "cd") == 0 ){
-			   flags->parse_again = 1;
-		  	}	   
-		 }
-	} else if( strcmp( argv[0], "cd" ) == 0){
-		flags->chdir_flag = 1;
-		if (argv[1] == NULL) {
-		   chdir(getenv("HOME"));
-		   return;
-		} else {
-			changeDir( argv );
-		}
- 	} else if( strcmp( argv[0], "history") == 0) {
-		flags->history = 1;
-		print_history();
-	}		
-}
-
-/*
  * A function used to change directories
  *
  * @param argv A pointer to an array of arguments
@@ -299,16 +215,6 @@ char *addStrings( char *str1, char *str2){
 	return str3;
 }
 
-/*
- * A function for reseting a number of pointers to zero
- *
- * @param chdir_flag A pointer to a flag indicating we are changing
- * directories
- * @param history A pointer a flag indicating we are runnning the history
- * command
- * @param parse_again A pointer to a commmand indicating we are going to have
- * to parse again
- */
 void resetPointers(Flags *flags){
 	flags->skip_command = 0;
 	flags->chdir_flag = 0;
@@ -327,4 +233,37 @@ void initFlags(Flags *flags){
 	flags->chdir_flag = 0;
 	flags->history = 0;
 	flags->parse_again = 0;
+}
+int parse(char* cmdline, char** argv, Flags* flags) {
+	int ret = 0;
+	if((argv[0] == NULL) || flags->chdir_flag == 1 ) {
+		flags->skip_command = 1;
+		return -1;
+	}
+	else if(strcmp(argv[0], "cd") == 0) {
+		flags->chdir_flag = 1;
+		if(argv[1] == NULL) {
+			chdir(getenv("HOME"));
+			return -1;
+		}
+		else {
+		changeDir(argv);
+		return -1;
+		}
+	}
+	else if(strcmp(argv[0], "history") == 0) {
+		flags->history = 1;
+		print_history();
+		return -1;
+	}
+	if((argv[1] == NULL) && ((ret = isHistoryCmd(argv)) != -1)) {
+		if(ret != -2) {
+			 cmdline = check_history(ret);
+		}
+		else {
+			cmdline = repeatCmd();
+		}		 
+	}
+	parseArguments(cmdline, argv);
+	return 1;
 }	

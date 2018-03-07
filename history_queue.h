@@ -13,7 +13,7 @@
  * command executed
  */
 struct HistoryEntry {              
-    unsigned int cmd_num;
+   	int cmd_num;
     char cmdline[MAXLINE]; // command line for this process
 };
 
@@ -24,5 +24,6 @@ typedef struct HistoryEntry HistoryEntry;
 //forward declarations of our functions that will be used in our shell
 void add_queue(char *cmd_line);
 void print_history();
-char* check_history(unsigned int index);
+char* check_history(int index);
+char* repeatCmd();
 #endif
